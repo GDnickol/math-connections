@@ -10,7 +10,7 @@
   />
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"></script>
   <style>
-    /* light blue full‑screen background */
+    /* light blue background */
     body {
       background: #e0f7ff;
       font-family: sans-serif;
@@ -18,36 +18,24 @@
       max-width: 900px;
       margin: auto;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 0.5rem;
-    }
-    #instructions {
-      margin-bottom: 0.5rem;
-    }
-    #status {
-      margin-bottom: 1rem;
-      position: relative;
-    }
+    h1 { text-align: center; margin-bottom: 0.5rem; }
+    #instructions { margin-bottom: 0.5rem; }
+    #status { margin-bottom: 1rem; position: relative; }
 
     /* feedback bubble */
     #feedback {
       position: absolute;
-      top: 100%;
-      left: 0;
+      top: 100%; left: 0;
       transform: translateY(0.5rem);
       background: white;
       border: 1px solid #888;
       border-radius: 4px;
       padding: 0.5rem 1rem;
-      opacity: 1;
       animation: fadeOut 2s forwards;
     }
-    @keyframes fadeOut {
-      to { opacity: 0; }
-    }
+    @keyframes fadeOut { to { opacity: 0; } }
 
-    /* SOLVED GROUPS: one bar per solved category */
+    /* SOLVED GROUPS */
     #solved-groups {
       display: grid;
       grid-template-columns: 1fr;
@@ -55,36 +43,32 @@
       margin-bottom: 1.5rem;
     }
     .group-container {
-      box-sizing: border-box;
       border-radius: 4px;
       padding: 0.75rem;
       color: #222;
     }
     .group-container h3 {
-      margin: 0 0 0.5rem;
-      font-size: 1rem;
+      margin: 0 0 0.5rem; font-size: 1rem;
     }
     .tile-list {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 0.25rem;
     }
-    .tile-list span {
-      text-align: center;
-    }
+    .tile-list span { text-align: center; }
+
     .cat-0 { background: linear-gradient(to right, #a8e063, #56ab2f); }
     .cat-1 { background: linear-gradient(to right, #fff200, #ffd600); }
     .cat-2 { background: linear-gradient(to right, #ff5f6d, #ffc371); }
     .cat-3 { background: conic-gradient(red,orange,yellow,green,blue,indigo,violet); }
 
-    /* UNSOLVED TILE GRID */
+    /* UNSOLVED TILES */
     #tiles {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 0.5rem;
       background: rgba(255,255,255,0.6);
-      padding: 0.5rem;
-      border-radius: 4px;
+      padding: 0.5rem; border-radius: 4px;
     }
     .tile {
       background: #f9f9f9;
@@ -100,37 +84,27 @@
       background: #e7f1ff;
     }
 
-    /* shake animation for individual tiles */
+    /* shake only wrong tiles */
     @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20%, 60%   { transform: translateX(-10px); }
-      40%, 80%   { transform: translateX(10px); }
+      0%,100% { transform: translateX(0); }
+      20%,60% { transform: translateX(-10px); }
+      40%,80% { transform: translateX(10px); }
     }
     .shake {
       animation: shake 0.5s;
     }
 
-    #controls {
-      margin-top: 1rem;
-      text-align: center;
-    }
-    #controls button {
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-    }
+    #controls { margin-top: 1rem; text-align: center; }
+    #controls button { padding: 0.5rem 1rem; font-size: 1rem; }
 
-    #reveal {
-      margin-top: 2rem;
-    }
+    #reveal { margin-top: 2rem; }
     .category {
       border: 1px solid #ccc;
       border-radius: 4px;
       padding: 0.75rem;
       margin-bottom: 1rem;
     }
-    .category h3 {
-      margin: 0 0 0.5rem;
-    }
+    .category h3 { margin: 0 0 0.5rem; }
   </style>
 </head>
 <body>
@@ -149,7 +123,7 @@
   <div id="reveal"></div>
 
   <script>
-    // --- PUZZLE DATA ---
+    // --- ALL PUZZLES ---
     const puzzles = [
       {
         date: "2025-04-21",
@@ -196,65 +170,108 @@
           }
         ]
       },
-      
-  {
-    date: "2025-04-22",
-    groups: [
       {
-        category: "Evaluate to 0",
-        explanation: "These expressions all evaluate to 0 when simplified or calculated.",
-        tiles: [
-          "\\int_{-1}^{1} x^3 \\, dx",
-          "\\sin(\\pi)",
-          "\\ln(1)",
-          "\\frac{d}{dx}[5]"
+        date: "2025-04-22",
+        groups: [
+          {
+            category: "Evaluate to 0",
+            explanation: "These expressions all evaluate to 0 when simplified or calculated.",
+            tiles: [
+              "\\int_{-1}^{1} x^3 \\, dx",
+              "\\sin(\\pi)",
+              "\\ln(1)",
+              "\\frac{d}{dx}[5]"
+            ]
+          },
+          {
+            category: "Linear Differential Equations",
+            explanation: "These are first‑order linear differential equations.",
+            tiles: [
+              "\\frac{dy}{dx} + y = 0",
+              "\\frac{dy}{dx} = 3y + 2",
+              "y' - y = x",
+              "\\frac{dy}{dx} + 2y = \\cos(x)"
+            ]
+          },
+          {
+            category: "Require u‑substitution",
+            explanation: "These integrals are solvable by u‑substitution.",
+            tiles: [
+              "\\int x \\cdot \\cos(x^2) \\, dx",
+              "\\int \\frac{1}{x \\ln(x)} \\, dx",
+              "\\int 2x(x^2 + 1)^3 \\, dx",
+              "\\int \\frac{x}{x^2 + 1} \\, dx"
+            ]
+          },
+          {
+            category: "Laplace Transforms",
+            explanation: "These are Laplace transforms of basic functions.",
+            tiles: [
+              "\\mathcal{L}\\{1\\} = \\frac{1}{s}",
+              "\\mathcal{L}\\{t\\} = \\frac{1}{s^2}",
+              "\\mathcal{L}\\{e^{at}\\} = \\frac{1}{s - a}",
+              "\\mathcal{L}\\{\\sin(bt)\\} = \\frac{b}{s^2 + b^2}"
+            ]
+          }
         ]
       },
       {
-        category: "Linear Differential Equations",
-        explanation: "These are first‑order linear differential equations.",
-        tiles: [
-          "\\frac{dy}{dx} + y = 0",
-          "\\frac{dy}{dx} = 3y + 2",
-          "y' - y = x",
-          "\\frac{dy}{dx} + 2y = \\cos(x)"
-        ]
-      },
-      {
-        category: "Require u‑substitution",
-        explanation: "These integrals are solvable by u‑substitution.",
-        tiles: [
-          "\\int x \\cdot \\cos(x^2) \\, dx",
-          "\\int \\frac{1}{x \\ln(x)} \\, dx",
-          "\\int 2x(x^2 + 1)^3 \\, dx",
-          "\\int \\frac{x}{x^2 + 1} \\, dx"
-        ]
-      },
-      {
-        category: "Laplace Transforms",
-        explanation: "These are Laplace transforms of basic functions.",
-        tiles: [
-          "\\mathcal{L}\\{1\\} = \\frac{1}{s}",
-          "\\mathcal{L}\\{t\\} = \\frac{1}{s^2}",
-          "\\mathcal{L}\\{e^{at}\\} = \\frac{1}{s - a}",
-          "\\mathcal{L}\\{\\sin(bt)\\} = \\frac{b}{s^2 + b^2}"
+        date: "2025-04-23",
+        groups: [
+          {
+            category: "Kinetic Energy Equations",
+            explanation: "These express kinetic energy in different coordinate systems or scenarios.",
+            tiles: [
+              "KE = \\frac{1}{2}mv^2",
+              "KE = \\frac{1}{2}I\\omega^2",
+              "T = \\frac{1}{2}m(\\dot{x}^2 + \\dot{y}^2 + \\dot{z}^2)",
+              "T = \\frac{1}{2}m(v_r^2 + r^2 \\omega^2)"
+            ]
+          },
+          {
+            category: "Thermodynamics Identities",
+            explanation: "Fundamental equations from the first and second laws of thermodynamics.",
+            tiles: [
+              "\\Delta U = Q - W",
+              "\\delta Q = TdS",
+              "\\Delta H = \\Delta U + \\Delta (PV)",
+              "\\dot{Q} - \\dot{W} = \\frac{dE_{sys}}{dt}"
+            ]
+          },
+          {
+            category: "Vector Calculus Operators",
+            explanation: "These expressions use gradient, divergence, or curl.",
+            tiles: [
+              "\\nabla f",
+              "\\nabla \\cdot \\vec{F}",
+              "\\nabla \\times \\vec{F}",
+              "\\nabla T = [\\tfrac{\\partial T}{\\partial x}, \\tfrac{\\partial T}{\\partial y}, \\tfrac{\\partial T}{\\partial z}]"
+            ]
+          },
+          {
+            category: "Common Units in Engineering",
+            explanation: "These are all standard units used across physics or engineering.",
+            tiles: [
+              "\\text{Joules (J)}",
+              "\\text{Watts (W)}",
+              "\\text{Newtons (N)}",
+              "\\text{Kelvin (K)}"
+            ]
+          }
         ]
       }
-    ]
-  }
-];
-
     ];
 
-    // --- HELPERS & STATE ---
+    // --- UTILS & STATE ---
     function todayDate(){ return new Date().toISOString().slice(0,10); }
     function arraysEqual(a,b){ return a.length===b.length && a.every((v,i)=>v===b[i]); }
 
-    let puzzle, flatTiles, selected = [], solvedGroups=[false,false,false,false], wrongLeft=4;
+    let puzzle, flatTiles, selected=[], solvedGroups=[false,false,false,false], wrongLeft=4;
 
     // --- INIT ---
     function init(){
-      puzzle = puzzles.find(p=>p.date===todayDate())||puzzles[0];
+      const today = todayDate();
+      puzzle = puzzles.find(p=>p.date===today) || puzzles[0];
       flatTiles = [];
       puzzle.groups.forEach((g,i)=> g.tiles.forEach(tex=> flatTiles.push({tex,group:i})));
       flatTiles.sort(()=>Math.random()-0.5);
@@ -265,28 +282,26 @@
 
     // --- RENDER TILES ---
     function renderTiles(){
-      const container = document.getElementById("tiles");
-      container.innerHTML = "";
+      const c = document.getElementById("tiles");
+      c.innerHTML = "";
       flatTiles.forEach((tile,i)=>{
-        const div = document.createElement("div");
-        div.className="tile";
-        div.dataset.index=i;
-        div.addEventListener("click", onTileClick);
-        katex.render(tile.tex,div,{throwOnError:false,displayMode:true});
-        container.appendChild(div);
+        const d = document.createElement("div");
+        d.className="tile"; d.dataset.index=i;
+        d.addEventListener("click", onTileClick);
+        katex.render(tile.tex,d,{throwOnError:false,displayMode:true});
+        c.appendChild(d);
       });
     }
 
     // --- TILE CLICK ---
     function onTileClick(e){
-      const div = e.currentTarget;
-      const idx = +div.dataset.index;
-      if(div.classList.contains("selected")){
+      const d=e.currentTarget, idx=+d.dataset.index;
+      if(d.classList.contains("selected")){
         selected = selected.filter(x=>x!==idx);
-        div.classList.remove("selected");
+        d.classList.remove("selected");
       } else if(selected.length<4){
         selected.push(idx);
-        div.classList.add("selected");
+        d.classList.add("selected");
       }
     }
 
@@ -302,7 +317,7 @@
       });
 
       if(found<0){
-        // wrong guess: shake only the highlighted tiles
+        // shake only the highlighted tiles
         selected.forEach(i=>{
           const t = document.querySelector(`.tile[data-index='${i}']`);
           if(t){
@@ -314,63 +329,58 @@
             );
           }
         });
-
-        wrongLeft--;
-        updateStatus();
+        wrongLeft--; updateStatus();
         if(maxMatch===3) showFeedback("close! one away");
         if(wrongLeft<=0) return endGame(false);
       } else {
-        // correct guess: no shake
-        solvedGroups[found]=true;
+        // correct, no shake
+        solvedGroups[found] = true;
         displaySolvedGroup(found);
         if(solvedGroups.every(v=>v)) return endGame(true);
       }
-
       resetSelection();
     }
 
-    // --- RESET SELECTION ---
+    // --- RESET ---
     function resetSelection(){
       selected.forEach(i=>{
-        const t = document.querySelector(`.tile[data-index='${i}']`);
+        const t=document.querySelector(`.tile[data-index='${i}']`);
         if(t) t.classList.remove("selected");
       });
-      selected = [];
+      selected=[];
     }
 
-    // --- DISPLAY SOLVED BAR ---
+    // --- DISPLAY SOLVED ---
     function displaySolvedGroup(groupIndex){
-      const sg = document.getElementById("solved-groups");
-      const bar = document.createElement("div");
-      bar.className = `group-container cat-${groupIndex}`;
+      const sg=document.getElementById("solved-groups");
+      const bar=document.createElement("div");
+      bar.className=`group-container cat-${groupIndex}`;
 
-      const h3 = document.createElement("h3");
-      h3.textContent = puzzle.groups[groupIndex].category;
+      const h3=document.createElement("h3");
+      h3.textContent=puzzle.groups[groupIndex].category;
       bar.appendChild(h3);
 
-      const list = document.createElement("div");
-      list.className = "tile-list";
+      const list=document.createElement("div");
+      list.className="tile-list";
       puzzle.groups[groupIndex].tiles.forEach(tex=>{
-        const sp = document.createElement("span");
+        const sp=document.createElement("span");
         katex.render(tex,sp,{throwOnError:false,displayMode:false});
         list.appendChild(sp);
       });
       bar.appendChild(list);
       sg.appendChild(bar);
 
-      // remove solved tiles from grid
       selected.forEach(i=>{
-        const t = document.querySelector(`.tile[data-index='${i}']`);
+        const t=document.querySelector(`.tile[data-index='${i}']`);
         if(t) t.remove();
       });
     }
 
-    // --- FEEDBACK BUBBLE ---
+    // --- FEEDBACK ---
     function showFeedback(msg){
-      const status = document.getElementById("status");
-      const fb = document.createElement("div");
-      fb.id = "feedback";
-      fb.textContent = msg;
+      const status=document.getElementById("status");
+      const fb=document.createElement("div");
+      fb.id="feedback"; fb.textContent=msg;
       status.appendChild(fb);
     }
 
@@ -378,19 +388,17 @@
     function updateStatus(){
       document.getElementById("guesses-left").textContent = wrongLeft;
     }
-
     function endGame(won){
       document.querySelectorAll(".tile").forEach(d=>
         d.removeEventListener("click", onTileClick)
       );
-      document.getElementById("solve-btn").disabled = true;
-      const out = document.getElementById("reveal");
-      out.innerHTML = `<h2>All Categories ${won?"Solved!":"Revealed"}</h2>`;
+      document.getElementById("solve-btn").disabled=true;
+      const out=document.getElementById("reveal");
+      out.innerHTML=`<h2>All Categories ${won?"Solved!":"Revealed"}</h2>`;
       puzzle.groups.forEach((g,i)=>{
-        const c = document.createElement("div");
-        c.className = "category";
-        c.innerHTML = `<h3>Category ${i+1}: ${g.category}</h3>
-                       <p>${g.explanation}</p>`;
+        const c=document.createElement("div");
+        c.className="category";
+        c.innerHTML=`<h3>Category ${i+1}: ${g.category}</h3><p>${g.explanation}</p>`;
         out.appendChild(c);
       });
     }
@@ -399,5 +407,4 @@
   </script>
 </body>
 </html>
-
 

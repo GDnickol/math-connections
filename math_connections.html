@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Math Connections</title>
+  <!-- KaTeX CSS & JS -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+  />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"></script>
+  <style>
+    /* light blue full‑screen background */
+    body {
+      background: #e0f7ff;
+      font-family: sans-serif;
+      padding: 1rem;
+      max-width: 900px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+    #instructions {
+      margin-bottom: 0.5rem;
+    }
+    #status {
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    /* feedback bubble */
+    #feedback {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      transform: translateY(0.5rem);
+      background: white;
+      border: 1px solid #888;
+      border-radius: 4px;
+      padding: 0.5rem 1rem;
+      opacity: 1;
+      animation: fadeOut 2s forwards;
+    }
+    @keyframes fadeOut {
+      to { opacity: 0; }
+    }
+
+    /* SOLVED GROUPS: one bar per solved category */
+    #solved-groups {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .group-container {
+      box-sizing: border-box;
+      border-radius: 4px;
+      padding: 0.75rem;
+      color: #222;
+    }
+    .group-container h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+    }
+    .tile-list {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.25rem;
+    }
+    .tile-list span {
+      text-align: center;
+    }
+    .cat-0 { background: linear-gradient(to right, #a8e063, #56ab2f); }
+    .cat-1 { background: linear-gradient(to right, #fff200, #ffd600); }
+    .cat-2 { background: linear-gradient(to right, #ff5f6d, #ffc371); }
+    .cat-3 { background: conic-gradient(red,orange,yellow,green,blue,indigo,violet); }
+
+    /* UNSOLVED TILE GRID */
+    #tiles {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.6);
+      padding: 0.5rem;
+      border-radius: 4px;
+    }
+    .tile {
+      background: #f9f9f9;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      padding: 0.5rem;
+      cursor: pointer;
+      min-height: 3.5rem;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .tile.selected {
+      border-color: #007bff;
+      background: #e7f1ff;
+    }
+
+    /* shake animation for individual tiles */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60%   { transform: translateX(-10px); }
+      40%, 80%   { transform: translateX(10px); }
+    }
+    .shake {
+      animation: shake 0.5s;
+    }
+
+    #controls {
+      margin-top: 1rem;
+      text-align: center;
+    }
+    #controls button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+    }
+
+    #reveal {
+      margin-top: 2rem;
+    }
+    .category {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .category h3 {
+      margin: 0 0 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Math Connections</h1>
+  <div id="instructions">
+    Select exactly 4 tiles, then click <strong>Solve</strong>.
+  </div>
+  <div id="status">
+    Wrong guesses left: <span id="guesses-left">4</span>
+  </div>
+  <div id="solved-groups"></div>
+  <div id="tiles"></div>
+  <div id="controls">
+    <button id="solve-btn">Solve</button>
+  </div>
+  <div id="reveal"></div>
+
+  <script>
+    // --- PUZZLE DATA ---
+    const puzzles = [
+      {
+        date: "2025-04-21",
+        groups: [
+          {
+            category: "Integrals equal to π/2",
+            explanation: "These all evaluate to π/2 when computed.",
+            tiles: [
+              "\\int_0^1 \\sqrt{1 - x^2} \\, dx",
+              "\\arcsin(1)",
+              "\\int_0^\\pi \\tfrac{\\sin(x)}{2} \\, dx",
+              "\\int_0^\\infty e^{-x^2} \\, dx"
+            ]
+          },
+          {
+            category: "Solutions to y = e^x",
+            explanation: "These are differential equations or integrals that solve to y = e^x.",
+            tiles: [
+              "\\frac{dy}{dx} = y",
+              "\\int e^x \\, dx = e^x + C",
+              "y' = y",
+              "\\frac{dy}{dx} - y = 0"
+            ]
+          },
+          {
+            category: "Requires the Chain Rule",
+            explanation: "Differentiating these expressions needs the chain rule.",
+            tiles: [
+              "\\frac{d}{dx}[\\sin(3x)]",
+              "\\frac{d}{dx}[e^{x^2}]",
+              "\\frac{d}{dx}[\\ln(2x)]",
+              "\\frac{d}{dx}[(x^2 + 1)^5]"
+            ]
+          },
+          {
+            category: "Look like integrals but are not valid",
+            explanation: "These resemble integrals but are incomplete or incorrect.",
+            tiles: [
+              "\\int f(x)",
+              "\\int dx",
+              "\\int\\int",
+              "\\int + C"
+            ]
+          }
+        ]
+      }
+    ];
+
+    // --- HELPERS & STATE ---
+    function todayDate(){ return new Date().toISOString().slice(0,10); }
+    function arraysEqual(a,b){ return a.length===b.length && a.every((v,i)=>v===b[i]); }
+
+    let puzzle, flatTiles, selected = [], solvedGroups=[false,false,false,false], wrongLeft=4;
+
+    // --- INIT ---
+    function init(){
+      puzzle = puzzles.find(p=>p.date===todayDate())||puzzles[0];
+      flatTiles = [];
+      puzzle.groups.forEach((g,i)=> g.tiles.forEach(tex=> flatTiles.push({tex,group:i})));
+      flatTiles.sort(()=>Math.random()-0.5);
+      renderTiles();
+      document.getElementById("solve-btn").addEventListener("click", onSolve);
+      updateStatus();
+    }
+
+    // --- RENDER TILES ---
+    function renderTiles(){
+      const container = document.getElementById("tiles");
+      container.innerHTML = "";
+      flatTiles.forEach((tile,i)=>{
+        const div = document.createElement("div");
+        div.className="tile";
+        div.dataset.index=i;
+        div.addEventListener("click", onTileClick);
+        katex.render(tile.tex,div,{throwOnError:false,displayMode:true});
+        container.appendChild(div);
+      });
+    }
+
+    // --- TILE CLICK ---
+    function onTileClick(e){
+      const div = e.currentTarget;
+      const idx = +div.dataset.index;
+      if(div.classList.contains("selected")){
+        selected = selected.filter(x=>x!==idx);
+        div.classList.remove("selected");
+      } else if(selected.length<4){
+        selected.push(idx);
+        div.classList.add("selected");
+      }
+    }
+
+    // --- SOLVE ---
+    function onSolve(){
+      if(selected.length!==4) return;
+      const chosen = selected.map(i=>flatTiles[i].tex).sort();
+      let found=-1, maxMatch=0;
+      puzzle.groups.forEach((g,gi)=>{
+        const count = chosen.filter(t=> g.tiles.includes(t)).length;
+        maxMatch = Math.max(maxMatch, count);
+        if(arraysEqual(chosen, g.tiles.slice().sort())) found=gi;
+      });
+
+      if(found<0){
+        // wrong guess: shake only the highlighted tiles
+        selected.forEach(i=>{
+          const t = document.querySelector(`.tile[data-index='${i}']`);
+          if(t){
+            t.classList.add("shake");
+            t.addEventListener(
+              "animationend",
+              ()=> t.classList.remove("shake"),
+              {once:true}
+            );
+          }
+        });
+
+        wrongLeft--;
+        updateStatus();
+        if(maxMatch===3) showFeedback("close! one away");
+        if(wrongLeft<=0) return endGame(false);
+      } else {
+        // correct guess: no shake
+        solvedGroups[found]=true;
+        displaySolvedGroup(found);
+        if(solvedGroups.every(v=>v)) return endGame(true);
+      }
+
+      resetSelection();
+    }
+
+    // --- RESET SELECTION ---
+    function resetSelection(){
+      selected.forEach(i=>{
+        const t = document.querySelector(`.tile[data-index='${i}']`);
+        if(t) t.classList.remove("selected");
+      });
+      selected = [];
+    }
+
+    // --- DISPLAY SOLVED BAR ---
+    function displaySolvedGroup(groupIndex){
+      const sg = document.getElementById("solved-groups");
+      const bar = document.createElement("div");
+      bar.className = `group-container cat-${groupIndex}`;
+
+      const h3 = document.createElement("h3");
+      h3.textContent = puzzle.groups[groupIndex].category;
+      bar.appendChild(h3);
+
+      const list = document.createElement("div");
+      list.className = "tile-list";
+      puzzle.groups[groupIndex].tiles.forEach(tex=>{
+        const sp = document.createElement("span");
+        katex.render(tex,sp,{throwOnError:false,displayMode:false});
+        list.appendChild(sp);
+      });
+      bar.appendChild(list);
+      sg.appendChild(bar);
+
+      // remove solved tiles from grid
+      selected.forEach(i=>{
+        const t = document.querySelector(`.tile[data-index='${i}']`);
+        if(t) t.remove();
+      });
+    }
+
+    // --- FEEDBACK BUBBLE ---
+    function showFeedback(msg){
+      const status = document.getElementById("status");
+      const fb = document.createElement("div");
+      fb.id = "feedback";
+      fb.textContent = msg;
+      status.appendChild(fb);
+    }
+
+    // --- STATUS & ENDGAME ---
+    function updateStatus(){
+      document.getElementById("guesses-left").textContent = wrongLeft;
+    }
+
+    function endGame(won){
+      document.querySelectorAll(".tile").forEach(d=>
+        d.removeEventListener("click", onTileClick)
+      );
+      document.getElementById("solve-btn").disabled = true;
+      const out = document.getElementById("reveal");
+      out.innerHTML = `<h2>All Categories ${won?"Solved!":"Revealed"}</h2>`;
+      puzzle.groups.forEach((g,i)=>{
+        const c = document.createElement("div");
+        c.className = "category";
+        c.innerHTML = `<h3>Category ${i+1}: ${g.category}</h3>
+                       <p>${g.explanation}</p>`;
+        out.appendChild(c);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
+
+

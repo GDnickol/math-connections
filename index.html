@@ -123,7 +123,7 @@
   <div id="reveal"></div>
 
   <script>
-    // --- ALL PUZZLES ---
+    // --- EVERY PUZZLE ---
     const puzzles = [
       {
         date: "2025-04-21",
@@ -175,7 +175,7 @@
         groups: [
           {
             category: "Evaluate to 0",
-            explanation: "These expressions all evaluate to 0 when simplified or calculated.",
+            explanation: "These expressions all simplify or evaluate to 0.",
             tiles: [
               "\\int_{-1}^{1} x^3 \\, dx",
               "\\sin(\\pi)",
@@ -185,7 +185,7 @@
           },
           {
             category: "Linear Differential Equations",
-            explanation: "These are first‑order linear differential equations.",
+            explanation: "First‑order linear DEs, common in intro dynamics/controls.",
             tiles: [
               "\\frac{dy}{dx} + y = 0",
               "\\frac{dy}{dx} = 3y + 2",
@@ -194,8 +194,8 @@
             ]
           },
           {
-            category: "Require u‑substitution",
-            explanation: "These integrals are solvable by u‑substitution.",
+            category: "Require u-substitution",
+            explanation: "These integrals need a substitution method to solve.",
             tiles: [
               "\\int x \\cdot \\cos(x^2) \\, dx",
               "\\int \\frac{1}{x \\ln(x)} \\, dx",
@@ -204,13 +204,13 @@
             ]
           },
           {
-            category: "Laplace Transforms",
-            explanation: "These are Laplace transforms of basic functions.",
+            category: "Equal to \\( \\frac{1}{s^2 + b^2} \\)",
+            explanation: "Three expressions have the same Laplace transform result as the fourth.",
             tiles: [
-              "\\mathcal{L}\\{1\\} = \\frac{1}{s}",
-              "\\mathcal{L}\\{t\\} = \\frac{1}{s^2}",
-              "\\mathcal{L}\\{e^{at}\\} = \\frac{1}{s - a}",
-              "\\mathcal{L}\\{\\sin(bt)\\} = \\frac{b}{s^2 + b^2}"
+              "\\sin(bt)",
+              "\\mathcal{L}\\{\\sin(bt)\\}",
+              "\\int_0^t b \\cos(b\\tau) \\, d\\tau",
+              "\\frac{1}{s^2 + b^2}"
             ]
           }
         ]
@@ -286,7 +286,7 @@
       c.innerHTML = "";
       flatTiles.forEach((tile,i)=>{
         const d = document.createElement("div");
-        d.className="tile"; d.dataset.index=i;
+        d.className = "tile"; d.dataset.index = i;
         d.addEventListener("click", onTileClick);
         katex.render(tile.tex,d,{throwOnError:false,displayMode:true});
         c.appendChild(d);
@@ -295,7 +295,7 @@
 
     // --- TILE CLICK ---
     function onTileClick(e){
-      const d=e.currentTarget, idx=+d.dataset.index;
+      const d = e.currentTarget, idx = +d.dataset.index;
       if(d.classList.contains("selected")){
         selected = selected.filter(x=>x!==idx);
         d.classList.remove("selected");
@@ -311,30 +311,24 @@
       const chosen = selected.map(i=>flatTiles[i].tex).sort();
       let found=-1, maxMatch=0;
       puzzle.groups.forEach((g,gi)=>{
-        const count = chosen.filter(t=> g.tiles.includes(t)).length;
+        const count = chosen.filter(t=>g.tiles.includes(t)).length;
         maxMatch = Math.max(maxMatch, count);
         if(arraysEqual(chosen, g.tiles.slice().sort())) found=gi;
       });
 
       if(found<0){
-        // shake only the highlighted tiles
         selected.forEach(i=>{
           const t = document.querySelector(`.tile[data-index='${i}']`);
           if(t){
             t.classList.add("shake");
-            t.addEventListener(
-              "animationend",
-              ()=> t.classList.remove("shake"),
-              {once:true}
-            );
+            t.addEventListener("animationend", ()=> t.classList.remove("shake"), {once:true});
           }
         });
         wrongLeft--; updateStatus();
         if(maxMatch===3) showFeedback("close! one away");
         if(wrongLeft<=0) return endGame(false);
       } else {
-        // correct, no shake
-        solvedGroups[found] = true;
+        solvedGroups[found]=true;
         displaySolvedGroup(found);
         if(solvedGroups.every(v=>v)) return endGame(true);
       }
@@ -344,7 +338,7 @@
     // --- RESET ---
     function resetSelection(){
       selected.forEach(i=>{
-        const t=document.querySelector(`.tile[data-index='${i}']`);
+        const t = document.querySelector(`.tile[data-index='${i}']`);
         if(t) t.classList.remove("selected");
       });
       selected=[];
@@ -355,11 +349,9 @@
       const sg=document.getElementById("solved-groups");
       const bar=document.createElement("div");
       bar.className=`group-container cat-${groupIndex}`;
-
       const h3=document.createElement("h3");
       h3.textContent=puzzle.groups[groupIndex].category;
       bar.appendChild(h3);
-
       const list=document.createElement("div");
       list.className="tile-list";
       puzzle.groups[groupIndex].tiles.forEach(tex=>{
@@ -369,7 +361,6 @@
       });
       bar.appendChild(list);
       sg.appendChild(bar);
-
       selected.forEach(i=>{
         const t=document.querySelector(`.tile[data-index='${i}']`);
         if(t) t.remove();
@@ -386,12 +377,10 @@
 
     // --- STATUS & ENDGAME ---
     function updateStatus(){
-      document.getElementById("guesses-left").textContent = wrongLeft;
+      document.getElementById("guesses-left").textContent=wrongLeft;
     }
     function endGame(won){
-      document.querySelectorAll(".tile").forEach(d=>
-        d.removeEventListener("click", onTileClick)
-      );
+      document.querySelectorAll(".tile").forEach(d=>d.removeEventListener("click", onTileClick));
       document.getElementById("solve-btn").disabled=true;
       const out=document.getElementById("reveal");
       out.innerHTML=`<h2>All Categories ${won?"Solved!":"Revealed"}</h2>`;
@@ -407,4 +396,3 @@
   </script>
 </body>
 </html>
-
